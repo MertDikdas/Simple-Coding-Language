@@ -7,8 +7,40 @@
 const char* keywords[] = {"number", "repeat", "times", "write", "and", "newline"};
 const char* operators[] = {":=", "+=", "-="};
 
+
+typedef struct {
+    char *type;
+    char *value;
+} Token;
+
+typedef struct TokenNode {
+    Token token;
+    struct TokenNode* next;
+} TokenNode;
+
+TokenNode* head = NULL;
+TokenNode* current= NULL;
+Token *tokens = NULL;
+
+int token_count = 0;
+int token_capacity = 10;  // Başlangıç kapasitesi
+
 int keywordsCount = sizeof(keywords) / sizeof(keywords[0]); //Keywords boyutu
 int operatorsCount = sizeof(operators) / sizeof(operators[0]); //operators boyutu
+
+void addToken(const char* type, const char* value) {
+    TokenNode* newNode = (TokenNode*)malloc(sizeof(TokenNode));
+    newNode->token.type = strdup(type);     // strdup ile string kopyası
+    newNode->token.value = strdup(value);
+    newNode->next = NULL;
+
+    if (head == NULL) {
+        head = current = newNode;
+    } else {
+        current->next = newNode;
+        current = newNode;
+    }
+}
 
 int isLetter(char currentCharacter) //İlk karakterin harf mi olduğunu check ediyoruz
 {
@@ -81,6 +113,7 @@ int checkingString(char* currentToken, FILE *codeFile, FILE *lexicalFile)
     else // string constant bittiyse çıktı veriyoruz dosyaya yazıyoruz
     {
         currentToken=writingToken(currentToken,ch); //En son okuduğumuz '"' ekleyip dosyaya yazdırıyoruz
+        addToken("StringConst", currentToken);
         fprintf(lexicalFile, "StringConst(%s)\n",currentToken);
     }
     return 0;
@@ -99,13 +132,16 @@ int checkingFirstChar(char* currentToken,char currentCharacter, FILE *codeFile, 
     switch (currentCharacter) {
         //Burada tek char'lık olan tokenları döndürüyoruz. return 0 demek artık bu token'da işlem yapmıyoruz ve token tamamlandı demek
         case ';':
-            fprintf(lexicalFile, "EndOfLine\n"); 
+            fprintf(lexicalFile, "EndOfLine\n");
+            addToken("EndOfLine", currentToken); 
             return 0;
         case '{':
             fprintf(lexicalFile, "OpenBlock\n"); 
+            addToken("OpenBlock", currentToken);
             return 0;
         case '}':
             fprintf(lexicalFile, "CloseBlock\n"); 
+            addToken("CloseBlock", currentToken);
             return 0;
         //Yorum satırı ve string constant için fonksiyonlarda değerlendirme yapıyoruz
         case '*':
@@ -144,7 +180,8 @@ int checkingFirstChar(char* currentToken,char currentCharacter, FILE *codeFile, 
             else
             {
                 currentToken=writingToken(currentToken,ch);
-                fprintf(lexicalFile,"Operator(%s)\n",currentToken);  
+                fprintf(lexicalFile,"Operator(%s)\n",currentToken); 
+                addToken("Operator", currentToken); 
                 return 0;
             }
         
@@ -163,6 +200,7 @@ int checkingKeywordOrIdent(char* currentToken,const char* keywords[],FILE *lexic
     if(strlen(currentToken)>=MAX_VALUES_LENGTH) 
     {
         fprintf(lexicalFile,"Identifier(%s)\n",currentToken); 
+        addToken("Identifier", currentToken);
         return 0;//Token bitti o yüzden 0 döndürüyoruz
     }
     for(int i=0;i<keywordsCount;i++) //Bütün keywordler ile karşılaştırıyoruz
@@ -175,6 +213,7 @@ int checkingKeywordOrIdent(char* currentToken,const char* keywords[],FILE *lexic
             {
                 fprintf(lexicalFile,"Keyword(%s)\n",currentToken);
                 ungetc(ch, codeFile); //Son okuduğumz değeri geri yazdırıyoruz  
+                addToken("Keyword", currentToken);
                 return 0; //Güncel token bitti o yüzden 0 return ediyoruz
             } 
             ungetc(ch, codeFile); //Son okuduğumuz değeri geri yazdırıyoruz    
@@ -185,6 +224,7 @@ int checkingKeywordOrIdent(char* currentToken,const char* keywords[],FILE *lexic
     {
         fprintf(lexicalFile,"Identifier(%s)\n",currentToken); //Token'ı yazdırıyoruz
         ungetc(ch, codeFile);  //Son okduğumuz değeri geri alıyoruz 
+        addToken("Identifier", currentToken);
         return 0;  //Token bitti o yüzden 0 return ediyoruz ki yeni token'a geçsin
     }    
 
@@ -197,6 +237,7 @@ int checkingIntegerConst(char* currentToken, FILE* lexicalFile,FILE* codeFile)
     if(strlen(currentToken)>=MAX_DECIMAL_LENGTH) //Bell bir sayıda karaktere ulaşunca token'ı bitiriyoruz
     {
         fprintf(lexicalFile,"IntConstant(%s)\n",currentToken);  
+        addToken("IntConstant", currentToken);
         return 0; //Devam etmediği için 0 return ediyoruz
     }
     //Eğer bir keyword ile eşleştiyse bir sonraki char'a bakıyoruz eğer harf,sayı ve '_' değilse keyword olarak işaretliyoruz
@@ -204,6 +245,7 @@ int checkingIntegerConst(char* currentToken, FILE* lexicalFile,FILE* codeFile)
     if (isInteger(ch)==0) //Okuduğumuz bir sayı değilse token bitmiş oluyor ve yazdırıyoruz
     {
         fprintf(lexicalFile,"IntConstant(%s)\n",currentToken);
+        addToken("IntConstant", currentToken);
         ungetc(ch, codeFile);   
         return 0; 
     } 
@@ -260,6 +302,12 @@ int main() {
             currentCharacter=readingFileChar(codeFile);// Token devam ediyosa 1 karakter okuyoruz dosyadan
             currentToken=writingToken(currentToken,currentCharacter); //Okuduğumuz karakteri token'a yazdırıyoruz
         }
+    }
+
+    TokenNode* current = head;
+    while (current != NULL) {
+        printf("%s(%s)\n", current->token.type, current->token.value);
+        current = current->next;
     }
     fclose(lexicalFile);
     fclose(codeFile);
