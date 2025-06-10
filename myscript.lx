@@ -1,0 +1,29 @@
+EndOfLine
+Operator(+=)
+Identifier(aaaaaaaaaaaaaaaaaaaa)
+Identifier(baaaaaaaaaaaaaaaaaaa)
+Identifier(a)
+StringConst("deneme \n number 12303 ; dsadsa")
+Keyword(number)
+Identifier(anumber)
+Identifier(numbera)
+Identifier(number_)
+Keyword(number)
+IntConstant(123)
+Identifier(number123)
+Identifier(newlinea)
+IntConstant(1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111)
+IntConstant(11)
+Keyword(number)
+Identifier(sdads)
+Identifier(asdf)
+Operator(+=)
+Keyword(number)
+EndOfLine
+IntConstant(-121321)
+IntConstant(2311)
+Identifier(klm)
+StringConst(" sdadsa sdadas 
+sdadsasda
+dsadsa
+")
