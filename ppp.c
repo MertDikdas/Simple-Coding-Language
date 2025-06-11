@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lexical_analyzer.h"
-#include "parser.h"
+#include "token.h"
+
 
 // gcc ppp.c lexical_analyzer.c parser.c -o ppp.exe
 // ./ppp myscript
 
+int LexicalAnalyzer(const char* filename);
+int Parser(TokenNode* tokens);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -26,15 +28,13 @@ int main(int argc, char* argv[]) {
 
     // Lexical analiz
     if (LexicalAnalyzer(full_filename) != 0) {
-        printf("Lexical analizde hata oluştu.\n");
+        printf("There is an error in LEXICAL ANALYZER.\n");
         return 1;
     }
 
-    // Token listesini al
-    TokenNode* tokens = getTokenList();
 
     // Parser (söz dizimi çözümleyici)
-    if (Parser(tokens) != 0) {
+    if (Parser(tokenHead) != 0) {
         printf("Parser'da hata oluştu.\n");
         return 1;
     }

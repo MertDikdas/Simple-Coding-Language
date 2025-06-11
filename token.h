@@ -11,8 +11,8 @@ typedef struct TokenNode {
     struct TokenNode* next;
 } TokenNode;
 
-extern TokenNode* head;
-extern TokenNode* current;
+extern TokenNode* tokenHead;
+extern TokenNode* tokenCurrent;
 extern Token* tokens;
 // Token listesine erişim için
 TokenNode* getTokenList(void);

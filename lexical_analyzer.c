@@ -1,4 +1,4 @@
-#include "lexical_analyzer.h"
+#include "token.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,12 +7,11 @@
 
 const char* keywords[] = {"number", "repeat", "times", "write", "and", "newline"};
 const char* operators[] = {":=", "+=", "-="};
-
 int keywordsCount = sizeof(keywords) / sizeof(keywords[0]); //Keywords boyutu
 int operatorsCount = sizeof(operators) / sizeof(operators[0]); //operators boyutu
-
-TokenNode* head = NULL;
-TokenNode* current= NULL;
+int isError=0;
+TokenNode* tokenHead = NULL;
+TokenNode* tokenCurrent= NULL;
 Token *tokens = NULL;
 
 
@@ -22,16 +21,16 @@ void addToken(const char* type, const char* value) {
     newNode->token.value = strdup(value);
     newNode->next = NULL;
 
-    if (head == NULL) {
-        head = current = newNode;
+    if (tokenHead == NULL) {
+        tokenHead = tokenCurrent = newNode;
     } else {
-        current->next = newNode;
-        current = newNode;
+        tokenCurrent->next = newNode;
+        tokenCurrent = newNode;
     }
 }
 
 TokenNode* getTokenList() {
-    return head;
+    return tokenHead;
 }
 
 int isLetter(char currentCharacter) //İlk karakterin harf mi olduğunu check ediyoruz
@@ -84,6 +83,7 @@ int checkingComment(char* currentToken, FILE *codeFile)
     if(ch!='*' && feof(codeFile)) //Yıldız gelmediyse ve dosya bittiyse
     {
         printf("Error: Comment not closed \n"); // Hata mesajı yazdır
+        isError=1;
     }
     return 0;
 }
@@ -101,6 +101,7 @@ int checkingString(char* currentToken, FILE *codeFile)
     if(ch!='"' && feof(codeFile)) //'"'  görülmediyse ve dosya bittiyse
     {
         printf("Error: String Constant not closed \n");
+        isError=1;
     }
     else // string constant bittiyse çıktı veriyoruz dosyaya yazıyoruz
     {
@@ -162,6 +163,7 @@ int checkingFirstChar(char* currentToken,char currentCharacter, FILE *codeFile)
             if (ch != '=')
             {
                 printf("ERROR UNKNOWN CHARACTER(%c) DETECTED!!!\n",currentCharacter);
+                isError=1;
                 ungetc(ch, codeFile);
                 return 0;
             }
@@ -175,6 +177,7 @@ int checkingFirstChar(char* currentToken,char currentCharacter, FILE *codeFile)
         default:
         //Buraya girdiyse ne harf ne sayı ne de özel karakterlerden ve o yüzden konsola unknown print ediyoruz
             printf("ERROR UNKNOWN CHARACTER(%c) DETECTED!!!\n",currentCharacter);
+            isError=1;
             return 0; //Teknik olarak token başlamadan bitmiş oluyo o yüzden bittiğini göstermek için 0 return ediyoruz
     }
 
@@ -239,6 +242,7 @@ int checkingIntegerConst(char* currentToken,FILE* codeFile)
 
 int LexicalAnalyzer(const char* sourceFileName)
 {
+
     FILE *codeFile; //Kodu okuyacağımız dosya
     codeFile=fopen(sourceFileName,"rb"); //Kod dosyasını okumak için açıyoruz
     if(codeFile==NULL) 
@@ -249,6 +253,10 @@ int LexicalAnalyzer(const char* sourceFileName)
 
     while (!feof(codeFile)) //Dosya bitene kadar döngü dönecek
     {
+        if(isError!=0)
+        {
+            return 1;
+        }
         int isContinue=1; //(BOOLEAN) Anlık olarak bir token'a devam ediyor muyuz
         char* currentToken=malloc(2); /*Bir lexeme'in uzunluğu ne kadar olucağını bilemediğimiz
         için şuanlık bellekte 2 byte'lık yer ayırıyoruz */
@@ -281,6 +289,11 @@ int LexicalAnalyzer(const char* sourceFileName)
             currentCharacter=readingFileChar(codeFile);// Token devam ediyosa 1 karakter okuyoruz dosyadan
             currentToken=writingToken(currentToken,currentCharacter); //Okuduğumuz karakteri token'a yazdırıyoruz
         }
+    }
+    
+    if(isError!=0)
+    {
+        return 1;
     }
     fclose(codeFile);
 }
