@@ -97,9 +97,115 @@ int parseAssignment();
 int parseIncrement();
 int parseDecrement();
 int parseWrite();
-int parseLoop();
 //
+int parseLoop(TokenNode** current) 
+{
+    
+    if (*current == NULL || strcmp((*current)->token.type, "Keyword") != 0 || strcmp((*current)->token.value, "repeat") != 0) {  // repeat kelimesi gelmiş mi diye kontrol ediyoruz
+        printf("Error: 'repeat' was expected\n");
+        return 1;
+    }
+    *current = (*current)->next; // bir sonraki tokene geçiyoruz
+    
+     if (*current == NULL || 
+        (strcmp((*current)->token.type, "IntConstant") != 0 && strcmp((*current)->token.type, "Identifier") != 0)) { //repeatten sonra IntConstant veya Identifier gelmiş mi diye kontrol ediyoruz
+        printf("Error: 'IntConstant' or 'Identifier' expected after 'repeat' statement.\n");
+        return 1;
+    }
 
+    *current = (*current)->next; // bir sonraki tokene geçiyoruz
+
+    if (*current == NULL || strcmp((*current)->token.value, "times") != 0) { // times kelimesi gelmiş mi diye bakıyoruz
+    printf("Error: ‘times’ is expected after the ‘IntConstant’ or ‘Identifier’ statement.\n");
+    return 1;
+    }
+
+    *current = (*current)->next; // bir sonraki tokene geçiyoruz
+
+    if (*current == NULL) { //timestan sonra loop döngüsü boş gelmişse
+        printf("Error: Loop body missing.\n");
+        return 1;
+    }
+
+    if (strcmp((*current)->token.value, "{") == 0) { // Blok varsa parseCodeBlock metodunu çağırıyoruz
+        return parseCodeBlock(current);
+    } 
+
+    else {
+        return parseLine(current);         // Tek satır kod varsa parseLine metodunu çağırıyoruz 
+    }  
+}
+
+int parseLine(TokenNode** current) { // Döngüde Tek satır kod  metodu 
+    if (*current == NULL) {
+        printf("Error: Unexpected end of input in parseLine.\n");
+        return 1;
+    }
+
+    if (strcmp((*current)->token.type, "Keyword") == 0) {
+        if (strcmp((*current)->token.value, "write") == 0) {
+            return parseWrite(current);
+        } 
+        else if (strcmp((*current)->token.value, "repeat") == 0) {
+            return parseLoop(current);
+        } 
+        else {
+            printf("Error: Unknown keyword in parseLine: %s\n", (*current)->token.value);
+            return 1;
+        }
+    } 
+    else if (strcmp((*current)->token.type, "Identifier") == 0) {
+        // parseAssignment, parseIncrement ve parseDecrement'ı sırayla deniyoruz
+        if (parseAssignment(current) == 0) {
+            return 0;
+        } 
+        else if (parseIncrement(current) == 0) {
+            return 0;
+        } 
+        else if (parseDecrement(current) == 0) {
+            return 0;
+        } 
+        else {
+            printf("Error: Invalid statement starting with identifier %s\n", (*current)->token.value);
+            return 1;
+        }
+    } 
+    else {
+        printf("Error: Unexpected token type in parseLine: %s\n", (*current)->token.type);
+        return 1;
+    }
+}
+
+int parseCodeBlock(TokenNode** current) {
+    
+    if (*current == NULL || strcmp((*current)->token.value, "{") != 0) { // current şu an '{' tokeninde olmalı
+        printf("Error: Expected '{' at the beginning of code block.\n");
+        return 1;
+    }
+
+    *current = (*current)->next; // bir sonraki tokene geçiyoruz
+
+    
+    while (*current != NULL && strcmp((*current)->token.value, "}") != 0) { // '}' gelene kadar döngüyü devam ettirip her satırda parseLine'ı çağır
+        int x = parseLine(current);
+        if (x != 0) {
+            return 1; 
+        }
+    }
+
+    
+    if (*current == NULL || strcmp((*current)->token.value, "}") != 0) { // Döngüden çıkınca '}' token'ını kontrol et
+        printf("Error: Expected '}' at the end of code block.\n");
+        return 1;
+    }
+
+    *current = (*current)->next; // bir sonraki tokene geçiyoruz
+
+    return 0;
+}
+
+// devamını yazıcam
+  
 int testDeclarations()
 {
     VariableNode* while2current= variableHead;
