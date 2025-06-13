@@ -1,4 +1,5 @@
 number number1;
-number number1;
+number1:=5;
 number number2;
-number number3;
+write number2;
+repeat 5 time write 5;
