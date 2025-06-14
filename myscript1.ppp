@@ -1,4 +1,7 @@
 number number1;
-number number1;
 number number2;
 number number3;
+repeat 4 times {
+    number1+=5;
+    number2+=2;
+}
