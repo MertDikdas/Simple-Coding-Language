@@ -61,5 +61,6 @@
     "string.h": "c",
     "lexical_analyzer.h": "c",
     "stdlib.h": "c"
-  }
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }
