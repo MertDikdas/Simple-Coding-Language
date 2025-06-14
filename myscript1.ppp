@@ -1,7 +1,8 @@
 number number1;
 number number2;
 number number3;
-repeat 4 times {
-    number1+=5;
-    number2+=2;
+number3:=4;
+repeat number3 times{
+    write 3;
 }
+repeat 2 times repeat 2 times write "a";

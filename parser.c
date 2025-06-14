@@ -18,7 +18,8 @@ typedef struct VariableNode
 VariableNode;
  
 VariableNode* variableHead=NULL;
- 
+int blockCount=0;
+
 int moveCurrentToken(TokenNode** current) //currentToken'ı bir ileri almak için
 {
     *current=(*current)->next;
@@ -508,7 +509,6 @@ int executeWrite(TokenNode** current)
 
 
 
-
 int parseLoop(TokenNode** current)
 {
     moveCurrentToken(current);
@@ -522,13 +522,35 @@ int parseLoop(TokenNode** current)
         printf("ERROR : HAVE TO BE AN IDENTIFIER AFTER REPEAT.\n");
         return 1;
     }
-
-    const char* tempValue=(*current)->token.value;
-    char *endptr=NULL;
-    long long size=strtoll(tempValue,&endptr,10);
-
-    if (*endptr != '\0') {
-        printf("ERROR: NOT AN INTEGER: %s\n", endptr);
+    long long size = 0;
+    VariableNode* var=NULL;
+    if (strcmp((*current)->token.type, "Identifier") == 0) {
+        VariableNode* currentVariable=variableHead;
+        while (currentVariable!=NULL)
+        {
+            if(strcmp(currentVariable->val.value_name,(*current)->token.value)==0)
+            {
+                var=currentVariable;
+            }
+            currentVariable=currentVariable->next;
+        }
+        
+        if (var == NULL) {
+            printf("ERROR: Variable not defined: %s\n", (*current)->token.value);
+            return 1;
+        }
+        size = var->val.value;
+    } else if (strcmp((*current)->token.type, "IntConstant") == 0) {
+        const char* tempValue = (*current)->token.value;
+        char *endptr = NULL;
+        size = strtoll(tempValue, &endptr, 10);
+        if (*endptr != '\0') {
+            printf("ERROR: NOT AN INTEGER: %s\n", tempValue);
+            return 1;
+        }
+    } else {
+        printf("ERROR: Expected integer or variable before 'times'.\n");
+        return 1;
     }
     
     moveCurrentToken(current);
@@ -543,6 +565,7 @@ int parseLoop(TokenNode** current)
     {
         for(int i=size;i>=1;i--)
         {
+        
             TokenNode* localCurrent=*current;
             moveCurrentToken(&localCurrent);
             while(strcmp(localCurrent->token.value, "}")!=0)
@@ -609,7 +632,7 @@ int parseLoop(TokenNode** current)
                     returnValue = parseLoop(&localCurrent);
                 }
             
-        
+                
                 if (returnValue != 0)
                 {
                     return 1;
@@ -617,22 +640,30 @@ int parseLoop(TokenNode** current)
                 
                 moveCurrentToken(&localCurrent); //currenToken'ı bir ileri alıyoruz
             }
-            
+            if(var!=NULL)
+            {
+                var->val.value=var->val.value-1;
+            }
         }
-        while((*current)!=NULL && strcmp((*current)->token.value, "}")!=0)
+        int blockCount=1;
+        while((*current)!=NULL &&  blockCount!=0)
         {
             *current=(*current)->next;
+            if(strcmp((*current)->token.value, "}")==0)
+            {
+                blockCount--;
+            }
         } 
         if(*current==NULL)
         {
             return 1;
-        } 
+        }
         return 0;
 
     }
     else
     {
-        for(int i=size; i>=1;i--)
+        for(int i=size;i>=1;i--)
         {
             TokenNode* localCurrent=*current;
             if(strcmp((*current)->token.value, "repeat")==0)
@@ -650,6 +681,7 @@ int parseLoop(TokenNode** current)
                 if(strcmp((*current)->next->token.type,"Operator")!=0)
                 {
                     printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
+                    printf("a");
                     return 1;
                 }
             
@@ -678,6 +710,7 @@ int parseLoop(TokenNode** current)
                     }
                 }
                 else{
+                    printf("b");
                     printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
                     return 1;
                 }
@@ -694,6 +727,10 @@ int parseLoop(TokenNode** current)
             else{
                 printf("ERROR:%s\n",(*current)->token.value);
                 return 1;
+            }
+            if(var!=NULL)
+            {
+                var->val.value=var->val.value-1;
             }
         }
 
@@ -714,119 +751,19 @@ int parseLoop(TokenNode** current)
         }
         else if(strcmp((*current)->token.value, "repeat")==0)
         {
-            while ((*current) != NULL && strcmp((*current)->token.value, "}") != 0) {
+            
+            while ((*current) != NULL && strcmp((*current)->token.value, ";") != 0) {
                 moveCurrentToken(current);
-            }
-            if (*current != NULL)               /* '}' üzerinde duruyorsak, onu da geç */
-                moveCurrentToken(current);      /* { 3. satırı: bloğun dışına çık    */
+            }    
+
             return 0;
         }
     }
 
+
 }
- 
-/*int parseLoop(TokenNode** current)
-{
-    *current = (*current)->next; // bir sonraki tokene geçiyoruz
-   
-     if (*current == NULL ||
-        (strcmp((*current)->token.type, "IntConstant") != 0 && strcmp((*current)->token.type, "Identifier") != 0)) { //repeatten sonra IntConstant veya Identifier gelmiş mi diye kontrol ediyoruz
-        printf("Error: 'IntConstant' or 'Identifier' expected after 'repeat' statement.\n");
-        return 1;
-    }
- 
-    *current = (*current)->next; // bir sonraki tokene geçiyoruz
- 
-    if (*current == NULL || strcmp((*current)->token.value, "times") != 0) { // times kelimesi gelmiş mi diye bakıyoruz
-    printf("Error: ‘times’ is expected after the ‘IntConstant’ or ‘Identifier’ statement.\n");
-    return 1;
-    }
- 
-    *current = (*current)->next; // bir sonraki tokene geçiyoruz
- 
-    if (*current == NULL) { //timestan sonra loop döngüsü boş gelmişse
-        printf("Error: Loop body missing.\n");
-        return 1;
-    }
- 
-    if (strcmp((*current)->token.value, "{") == 0) { // Blok varsa parseCodeBlock metodunu çağırıyoruz
-        return parseCodeBlock(current);
-    }
- 
-    else {
-        return parseLine(current);         // Tek satır kod varsa parseLine metodunu çağırıyoruz
-    }  
-}
- 
-int parseLine(TokenNode** current) { // Döngüde Tek satır kod  metodu
-    if (*current == NULL) {
-        printf("Error: Unexpected end of input in parseLine.\n");
-        return 1;
-    }
- 
-    if (strcmp((*current)->token.type, "Keyword") == 0) {
-        if (strcmp((*current)->token.value, "write") == 0) {
-            return parseWrite(current);
-        }
-        else if (strcmp((*current)->token.value, "repeat") == 0) {
-            return parseLoop(current);
-        }
-        else {
-            printf("Error: Unknown keyword in parseLine: %s\n", (*current)->token.value);
-            return 1;
-        }
-    }
-    else if (strcmp((*current)->token.type, "Identifier") == 0) {
-        // parseAssignment, parseIncrement ve parseDecrement'ı sırayla deniyoruz
-        if (parseAssignment(current) == 0) {
-            return 0;
-        }
-        else if (parseIncrement(current) == 0) {
-            return 0;
-        }
-        else if (parseDecrement(current) == 0) {
-            return 0;
-        }
-        else {
-            printf("Error: Invalid statement starting with identifier %s\n", (*current)->token.value);
-            return 1;
-        }
-    }
-    else {
-        printf("Error: Unexpected token type in parseLine: %s\n", (*current)->token.type);
-        return 1;
-    }
-}
- 
-int parseCodeBlock(TokenNode** current) {
-   
-    if (*current == NULL || strcmp((*current)->token.value, "{") != 0) { // current şu an '{' tokeninde olmalı
-        printf("Error: Expected '{' at the beginning of code block.\n");
-        return 1;
-    }
- 
-    *current = (*current)->next; // bir sonraki tokene geçiyoruz
- 
-   
-    while (*current != NULL && strcmp((*current)->token.value, "}") != 0) { // '}' gelene kadar döngüyü devam ettirip her satırda parseLine'ı çağır
-        int x = parseLine(current);
-        if (x != 0) {
-            return 1;
-        }
-    }
- 
-   
-    if (*current == NULL || strcmp((*current)->token.value, "}") != 0) { // Döngüden çıkınca '}' token'ını kontrol et
-        printf("Error: Expected '}' at the end of code block.\n");
-        return 1;
-    }
- 
-    *current = (*current)->next; // bir sonraki tokene geçiyoruz
- 
-    return 0;
-}
- */
-// devamını yazıcam
+
+
  
 int testDeclarations()
 {
@@ -844,7 +781,8 @@ int Parser(TokenNode* tokens) {
     int returnValue = 0;
  
     while (tokenCurrent != NULL) {
-        if (strcmp(tokenCurrent->token.type, "Keyword") == 0 && strcmp(tokenCurrent->token.value, "number") == 0) {//keyword ve number'sa
+        blockCount=0;
+        if (strcmp(tokenCurrent->token.value, "number") == 0) {//keyword ve number'sa
             returnValue = parseDeclaration(tokenCurrent);
             if(returnValue==0)
             {
@@ -853,10 +791,11 @@ int Parser(TokenNode* tokens) {
             
             
         }
- 
-        if (strcmp(tokenCurrent->token.type, "Identifier") == 0) {
+        else if (strcmp(tokenCurrent->token.type, "Identifier") == 0) {
+            
             if(strcmp(tokenCurrent->next->token.type,"Operator")!=0)
             {
+                
                 printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
                 return 1;
             }
@@ -892,8 +831,7 @@ int Parser(TokenNode* tokens) {
             }
            
         }
- 
-        if (strcmp(tokenCurrent->token.type, "Keyword") == 0 && strcmp(tokenCurrent->token.value, "write") == 0) {
+        else if (strcmp(tokenCurrent->token.value, "write") == 0) {
             returnValue = parseWrite(tokenCurrent);
             if(returnValue==0)
             {
@@ -901,10 +839,15 @@ int Parser(TokenNode* tokens) {
             }  
 
         }
- 
-        if (strcmp(tokenCurrent->token.type, "Keyword") == 0 && strcmp(tokenCurrent->token.value, "repeat") == 0) {  // repeat kelimesi gelmiş mi diye kontrol ediyoruz
+        else if (strcmp(tokenCurrent->token.value, "repeat") == 0) {  // repeat kelimesi gelmiş mi diye kontrol ediyoruz
             returnValue = parseLoop(&tokenCurrent);
         }
+        else
+        {
+            printf("ERROR: WRONG SYNTAX\n");
+            return 1;
+        }
+
        
  
         if (returnValue != 0)
@@ -916,6 +859,6 @@ int Parser(TokenNode* tokens) {
  
  
     //TEST DECLARATİON
-    testDeclarations();
+    //testDeclarations();
     return 0;
 }
