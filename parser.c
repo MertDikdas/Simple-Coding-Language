@@ -507,7 +507,18 @@ int executeWrite(TokenNode** current)
     return 0;
 }
 
-
+int blockParse(TokenNode** current)
+{
+    while((*current)!=NULL && strcmp((*current)->token.value, "}")!=0)
+    {
+        *current=(*current)->next;
+        if(strcmp((*current)->token.value, "{")==0)
+        {
+            blockParse(current);
+            *current=(*current)->next;
+        }
+    } 
+}
 
 int parseLoop(TokenNode** current)
 {
@@ -570,7 +581,7 @@ int parseLoop(TokenNode** current)
             moveCurrentToken(&localCurrent);
             while(strcmp(localCurrent->token.value, "}")!=0)
             { 
-                if (strcmp(localCurrent->token.type, "Keyword") == 0 && strcmp(localCurrent->token.value, "number") == 0) {//keyword ve number'sa
+                if (strcmp(localCurrent->token.value, "number") == 0) {//keyword ve number'sa
                     returnValue = parseDeclaration(localCurrent);
                     if(returnValue==0)
                     {
@@ -579,11 +590,10 @@ int parseLoop(TokenNode** current)
                     
                     
                 }
-        
-                if (strcmp(localCurrent->token.type, "Identifier") == 0) {
+                else if (strcmp(localCurrent->token.type, "Identifier") == 0) {
                     if(strcmp(localCurrent->next->token.type,"Operator")!=0)
                     {
-                        printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
+                        printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTIFIER\n");
                         return 1;
                     }
                 
@@ -612,13 +622,12 @@ int parseLoop(TokenNode** current)
                         }  
                     }
                     else{
-                        printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
+                        printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTIFIER\n");
                         return 1;
                     }
                 
                 }
-                
-                if (strcmp(localCurrent->token.type, "Keyword") == 0 && strcmp(localCurrent->token.value, "write") == 0) {
+                else if (strcmp(localCurrent->token.value, "write") == 0) {
                     returnValue = parseWrite(localCurrent);
                     if(returnValue==0)
                     {
@@ -626,10 +635,13 @@ int parseLoop(TokenNode** current)
                     }  
 
                 }
-                
-                if (strcmp(localCurrent->token.type, "Keyword") == 0 && strcmp(localCurrent->token.value, "repeat") == 0) {  // repeat kelimesi gelmiş mi diye kontrol ediyoruz
-                    
+                else if (strcmp(localCurrent->token.value, "repeat") == 0) {  // repeat kelimesi gelmiş mi diye kontrol ediyoruz
                     returnValue = parseLoop(&localCurrent);
+                }
+                else
+                {
+                    printf("ERROR: WRONG SYNTAX : %s \n",localCurrent->token.value);
+                    return 1;
                 }
             
                 
@@ -645,15 +657,7 @@ int parseLoop(TokenNode** current)
                 var->val.value=var->val.value-1;
             }
         }
-        int blockCount=1;
-        while((*current)!=NULL &&  blockCount!=0)
-        {
-            *current=(*current)->next;
-            if(strcmp((*current)->token.value, "}")==0)
-            {
-                blockCount--;
-            }
-        } 
+        blockParse(current);
         if(*current==NULL)
         {
             return 1;
@@ -680,7 +684,7 @@ int parseLoop(TokenNode** current)
             else if (strcmp((*current)->token.type, "Identifier") == 0) {
                 if(strcmp((*current)->next->token.type,"Operator")!=0)
                 {
-                    printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
+                    printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTIFIER\n");
                     printf("a");
                     return 1;
                 }
@@ -711,7 +715,7 @@ int parseLoop(TokenNode** current)
                 }
                 else{
                     printf("b");
-                    printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
+                    printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTIFIER\n");
                     return 1;
                 }
             
@@ -725,7 +729,7 @@ int parseLoop(TokenNode** current)
                 }
             }
             else{
-                printf("ERROR:%s\n",(*current)->token.value);
+                printf("ERROR: WRONG SYNTAX : %s \n",localCurrent->token.value);
                 return 1;
             }
             if(var!=NULL)
@@ -796,7 +800,7 @@ int Parser(TokenNode* tokens) {
             if(strcmp(tokenCurrent->next->token.type,"Operator")!=0)
             {
                 
-                printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
+                printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTIFIER\n");
                 return 1;
             }
            
@@ -826,7 +830,7 @@ int Parser(TokenNode* tokens) {
                 }  
             }
             else{
-                printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTİFİER\n");
+                printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTIFIER\n");
                 return 1;
             }
            
@@ -844,7 +848,7 @@ int Parser(TokenNode* tokens) {
         }
         else
         {
-            printf("ERROR: WRONG SYNTAX\n");
+            printf("ERROR: WRONG SYNTAX : %s \n",tokenCurrent->token.value);
             return 1;
         }
 
