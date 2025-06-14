@@ -2,11 +2,11 @@ number number1;
 number number2;
 number number3;
 number3:=2;
-repeat number3 times{
-    repeat 2 times { 
-        repeat 1 times s "1"; 
+repeat number3 times repeat 2 times{
+        repeat 1 times{
+            write 5;
+            write 1;
+        }
         write "2";
-    }
 }
 repeat 2 times repeat 2 times write "c";
-{}

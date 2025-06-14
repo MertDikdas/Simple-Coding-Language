@@ -514,6 +514,7 @@ int blockParse(TokenNode** current)
         *current=(*current)->next;
         if(strcmp((*current)->token.value, "{")==0)
         {
+            
             blockParse(current);
             *current=(*current)->next;
         }
@@ -685,7 +686,6 @@ int parseLoop(TokenNode** current)
                 if(strcmp((*current)->next->token.type,"Operator")!=0)
                 {
                     printf("ERROR: HAVE TO BE AN OPERATOR AFTER IDENTIFIER\n");
-                    printf("a");
                     return 1;
                 }
             
@@ -758,6 +758,13 @@ int parseLoop(TokenNode** current)
             
             while ((*current) != NULL && strcmp((*current)->token.value, ";") != 0) {
                 moveCurrentToken(current);
+                if(strcmp((*current)->token.value, "{") == 0)
+                {
+                    blockParse(current);
+                    
+                    break;
+                }
+
             }    
 
             return 0;
