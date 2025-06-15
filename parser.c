@@ -477,8 +477,6 @@ int parseWrite(TokenNode* current) {
         printf("\nError: Missing ';' at the end of write.\n"); // error message
         return 1;
     }
- 
-    printf("\n"); // move to the next line after each write
    
     return 0;
 }

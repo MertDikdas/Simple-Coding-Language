@@ -1,13 +1,5 @@
 number number1;
-number number2;
-number number3;
-number3:=4;
-number3-=2;
-write number3;
-
-repeat number3 times{
-    write 3;
+number1:=2;
+repeat number1 times repeat 2 times {
+    repeat 2 times write "a" and newline;
 }
-repeat 2 times repeat 2 times write "a";
-
-write "selam" and "aleykümselam";
