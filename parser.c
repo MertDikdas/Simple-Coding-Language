@@ -18,7 +18,7 @@ typedef struct VariableNode // Structure to hold variables in a linked list stru
 VariableNode;
  
 VariableNode* variableHead=NULL; // Head of the variable list
-int blockCount=0; // Code block counter
+
 
 int moveCurrentToken(TokenNode** current) //to advance currentToken
 {
@@ -44,14 +44,14 @@ int declareVariable(char*name){//To declare a variable
         return 0; //so that the function does not continue
     }
     if (strcmp(current->val.value_name, name)==0){ //If the name in current is equal to the new name, we return it.
-        printf("\nThis variable already defined.\n");
+        printf("\nThis variable(%s) already defined.\n",current->val.value_name);
         return 1;
     }
  
     while (current->next!=NULL)  
     {
         if (strcmp(current->next->val.value_name, name)==0){ //Here we look at the next values. If any of them are equal to a value, we simply return it.
-            printf("\nThis variable already defined.\n");
+            printf("\nThis variable (%s) already defined.\n",current->next->val.value_name);
             return 1;
         }
         current=current->next; //moving on to the next node
@@ -785,7 +785,7 @@ int Parser(TokenNode* tokens) { // Main function that parses tokens
     int returnValue = 0; // Variable to hold the result of the operation
  
     while (tokenCurrent != NULL) { // Loop until the token list is exhausted
-        blockCount=0; // We are resetting the block counter.
+        
         if (strcmp(tokenCurrent->token.value, "number") == 0) {//keyword ve number
             returnValue = parseDeclaration(tokenCurrent); // Parsing the variable definition
             if(returnValue==0) // If the parse is error-free
