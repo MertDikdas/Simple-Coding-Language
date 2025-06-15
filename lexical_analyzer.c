@@ -247,7 +247,7 @@ int LexicalAnalyzer(const char* sourceFileName)
     codeFile=fopen(sourceFileName,"rb"); //We open the code file to read it.
     if(codeFile==NULL) 
     {
-        printf("Dosya bulunamadı: %s\n", sourceFileName);
+        printf("File doesnot exist : %s\n", sourceFileName);
         return 1;
     }
 

@@ -30,7 +30,7 @@ int moveCurrentTokenToHead() //Set currentToken back to head
     tokenCurrent=tokenHead;
 }
  
-void declareVariable(char*name){//To declare a variable
+int declareVariable(char*name){//To declare a variable
  
     VariableNode* current; //We create a current node to traverse the variable nodes.
     current=variableHead; //We assign this to variableHead.
@@ -41,16 +41,18 @@ void declareVariable(char*name){//To declare a variable
         current->val.value=0; //We record 0 as the result of all declarations.
         current->next = NULL; // We set next to null.
         variableHead = current;//then we set variableHead equal to current
-        return; //so that the function does not continue
+        return 0; //so that the function does not continue
     }
     if (strcmp(current->val.value_name, name)==0){ //If the name in current is equal to the new name, we return it.
-        return;
+        printf("\nThis variable already defined.\n");
+        return 1;
     }
  
     while (current->next!=NULL)  
     {
         if (strcmp(current->next->val.value_name, name)==0){ //Here we look at the next values. If any of them are equal to a value, we simply return it.
-            return;
+            printf("\nThis variable already defined.\n");
+            return 1;
         }
         current=current->next; //moving on to the next node
  
@@ -61,7 +63,7 @@ void declareVariable(char*name){//To declare a variable
     strcpy(current->val.value_name, name); //We set the value of current to the value of name.
     current->val.value=0; //We set the value of current to 0.
     current->next = NULL;//We set the next of current to null.
-    return;
+    return 0;
 }
  
 int parseDeclaration(TokenNode* current)
@@ -82,7 +84,7 @@ int parseDeclaration(TokenNode* current)
     }
     else //endofline then we call the declareVariable function and send the values of the previousTaki identifier
     {
-        declareVariable(previous->token.value);
+        return declareVariable(previous->token.value);
     }
     return 0;
 }

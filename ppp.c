@@ -12,7 +12,7 @@ int Parser(TokenNode* tokens); // Parser function
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {  // If the number of arguments is not 2 (program name + file name)
-        printf("Kullanım: ppp <dosya_adı>\n"); // Show the user the correct usage
+        printf("Wrong Input : ppp <file_name>\n"); // Show the user the correct usage
         return 1;
     }
 
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 
     // Parser (syntax analyser)
     if (Parser(tokenHead) != 0) { // If an error was returned from the parser function
-        printf("Parser'da hata oluştu.\n"); // Print error message
+        printf("There is an error in parser.\n"); // Print error message
         return 1;
     }
 

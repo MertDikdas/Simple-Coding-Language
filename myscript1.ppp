@@ -1,5 +1,13 @@
-number number1;
-number1:=2;
-repeat number1 times repeat 2 times {
-    repeat 2 times write "a" and newline;
+number size;
+number sum;
+size:= 5;
+repeat size times
+{ write size and newline;
+  sum+=size;
 }
+write newline and "Sum : " and sum;
+
+number number4;
+number4+=5;
+number number4;
+write newline and number4;
