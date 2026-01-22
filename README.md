@@ -19,7 +19,7 @@ gcc ppp.c lexical_analyzer.c parser.c -o ppp
 
 ## Execution
 ```bash
-ppp script_name
+./ppp script_name
 ```
 -script_name is your Plus++ source code
 
