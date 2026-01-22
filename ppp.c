@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
         strncpy(full_filename, filename, sizeof(full_filename));
     }
 
+    printf("İşlenen dosya: %s\n", full_filename);
     // Lexical analiz
     if (LexicalAnalyzer(full_filename) != 0) {
         printf("There is an error in LEXICAL ANALYZER.\n");

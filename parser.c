@@ -833,8 +833,6 @@ int testDeclarations()
     VariableNode* while2current= variableHead;
     while (while2current!=NULL)
     {
-        printf("Variable Name: %s \n",while2current->val.value_name);
-        printf("Variable Value: %d \n",while2current->val.value);
         while2current=while2current->next;
     }
 }

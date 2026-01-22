@@ -250,7 +250,7 @@ int LexicalAnalyzer(const char* sourceFileName)
         printf("Dosya bulunamadı: %s\n", sourceFileName);
         return 1;
     }
-
+    
     while (!feof(codeFile)) //Dosya bitene kadar döngü dönecek
     {
         if(isError!=0)
@@ -296,4 +296,5 @@ int LexicalAnalyzer(const char* sourceFileName)
         return 1;
     }
     fclose(codeFile);
+    return 0;
 }

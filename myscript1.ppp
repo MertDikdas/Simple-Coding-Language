@@ -1,7 +1,11 @@
-number number1;
-number number2;
+number number1; *This comment block*
+number number2; *All variable are 0 at default*
 number number3;
+number3 := 5;
 repeat 4 times {
-    number1+=5;
-    number2+=2;
+    repeat 3 times {
+        number1+=5;
+        number2-=2;
+    }
 }
+write "Number1 : " and number1 and newline and "Number2: " and number2 and newline and "Number3: " and number3;
